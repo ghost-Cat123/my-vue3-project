@@ -97,3 +97,38 @@ export const postDislikePostAPI = (data) => {
   })
 }
 
+/** 
+ * 9. 根据用户id查询该用户所有发的帖子
+*/
+export const getFindByMemberIdAPI = (data) => {
+  return http({
+    method: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/post/findByMemberId',
+    data
+  })
+}
+
+/** 
+ * 10. 用户删除帖子
+*/
+export const postDeletePostAPI = (data) => {
+  return http({
+    method: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/post/dislikePost',
+    data
+  })
+}
+
+/** 
+ * 11. 用户编辑帖子
+*/
+export const postEditPostAPI = (data) => {
+  return http({
+    method: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/post/editPost',
+    data
+  })
+}

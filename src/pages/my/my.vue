@@ -57,12 +57,29 @@
 
   <button class="updateBtn" @click="toUpdateInfo()">修改个人信息</button>
   <button class="updatePwd" @click="popUpUpdate()">修改用户密码</button>
+
+  <!-- 个人发帖列表 -->
+  <view class="postListBr"></view>
+  <view class="postList">
+    <view class="myPost">我的评论</view>
+    <view class="postBox" v-for="postInfo in postList" :key="postInfo.postId">
+      <image class="postImg" @click="toCommentDetails(postInfo.postId)" :src="defaultImg(postInfo.memberImg)"
+        mode="'scaleToFill'"></image>
+      <view class="postTittle">
+        <view class="postName">{{ postInfo.memberName }}</view>
+        <view class="postTime">{{ postInfo.updateTime }}</view>
+      </view>
+      <view class="postBr"></view>
+      <view class="postContent">{{ postInfo.postContent }}</view>
+    </view>
+  </view>
 </template>
 
 <script>
 import { useMemberStore } from '@/stores/modules/member.js'
 import { useTokenStore } from '@/stores/modules/token.js'
 import { patchUpdatePwdAPI } from '@/services/member.js'
+import { getFindByMemberIdAPI, postDeletePostAPI, postEditPostAPI } from '@/services/post.js'
 
 export default {
   data() {
@@ -79,20 +96,24 @@ export default {
         userSign: '未填写个性签名',
         userLoc: '未填写所在地'
       },
+      postList: [{
+        memberId: 0,
+        memberImg: '',
+        memberName: '',
+        updateTime: '',
+        postContent: ''
+      }],
+
       commentNum: 0,
       likeNum: 0,
       petNum: 0,
-      plantNum: 0
-    }
-  },
+      plantNum: 0,
 
-  onShow() {
-    const member = useMemberStore().profile
-    this.userInfo.userName = member.userName
-    this.userInfo.userImg = member.userImg
-    this.userInfo.email = member.email
-    this.userInfo.userSign = member.userSign
-    this.userInfo.userLoc = member.userLoc
+      // 向后端传输数据
+      id: {
+        memberId: 0
+      }
+    }
   },
 
   methods: {
@@ -121,9 +142,33 @@ export default {
         // 未成功弹出提示
         uni.showToast({ icon: 'none', title: res.message })
       }
+    },
+    async getMyPost() {
+      const res = await getFindByMemberIdAPI(this.id)
+      this.postList = res.data
     }
   },
 
+  computed: {
+    // 计算任务状态
+    defaultImg() {
+      return function (memberImg) {
+        return memberImg === '' && this.postList.length !== 0 ? 'https://kanhubang.oss-cn-shanghai.aliyuncs.com/DefaultImg/%E9%BB%98%E8%AE%A4%E5%A4%B4%E5%83%8F.png' : memberImg
+      }
+    },
+  },
+
+  onShow() {
+    const member = useMemberStore().profile
+    this.userInfo.userName = member.userName
+    this.userInfo.userImg = member.userImg
+    this.userInfo.email = member.email
+    this.userInfo.userSign = member.userSign
+    this.userInfo.userLoc = member.userLoc
+    this.id.memberId = member.userId
+
+    this.getMyPost()
+  },
 }
 </script>
 
@@ -330,5 +375,86 @@ export default {
   color: #fff;
   background-color: #27BA9B;
   border-radius: 50rpx;
+}
+
+// 个人发帖列表
+.postListBr {
+  width: 100%;
+  height: 1rpx;
+  margin-top: 10rpx;
+  background-color: #888282;
+}
+
+.postList {
+  width: 100%;
+  height: 100%;
+  padding-top: 10rpx;
+  background-color: #d2cdcd96;
+
+  .myPost {
+    margin-left: 4%;
+    font-weight: bold;
+    color: #27BA9B;
+  }
+
+  // 评论
+  .postBox {
+    width: 92%;
+    height: 340rpx;
+    margin: 30rpx 4% 30rpx 4%;
+    border-radius: 12rpx;
+    box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.08);
+    background-color: #fff;
+
+    .postImg {
+      float: left;
+      width: 95rpx;
+      height: 95rpx;
+      border-radius: 50%;
+      margin: 30rpx 30rpx 20rpx 55rpx;
+    }
+
+    .postTittle {
+      float: left;
+      height: 100rpx;
+      width: 66%;
+      margin: 30rpx 0 20rpx 0;
+
+      .postName {
+        width: 100%;
+        font-size: 15px;
+        color: #3a3a3a;
+      }
+
+      .postTime {
+        width: 100%;
+        font-size: 12px;
+        margin-top: 5px;
+        color: #909399
+      }
+    }
+
+    .postBr {
+      float: left;
+      height: 1rpx;
+      width: 92%;
+      margin: 0 4%;
+      background-color: #EBEEF5;
+    }
+
+    .postContent {
+      float: left;
+      height: 160rpx;
+      width: 84%;
+      margin: 10rpx 8%;
+      font-size: 14px;
+      color: #6a6a6a;
+      line-height: 22px;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+  }
 }
 </style>
