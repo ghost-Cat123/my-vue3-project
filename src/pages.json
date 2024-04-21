@@ -1,0 +1,135 @@
+{
+	// 组件自动引入规则
+	"easycom": {
+		"autoscan": true,
+		// 正则方式
+		"custom": {
+			// uni-ui 规则如下配置
+			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+		}
+	},
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/community/community",
+			"style": {
+				"navigationBarTitleText": "社区",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/plant/plant",
+			"style": {
+				"navigationBarTitleText": "植物"
+			}
+		},
+		{
+			"path": "pages/pet/pet",
+			"style": {
+				"navigationBarTitleText": "宠物"
+			}
+		},
+		{
+			"path": "pages/my/my",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/community/PostDetails",
+			"style": {
+				"navigationBarTitleText": "评论详情"
+			}
+		},
+		{
+			"path": "pages/register/register",
+			"style": {
+				"navigationBarTitleText": "注册"
+			}
+		},
+		{
+			"path": "pages/plant/addPlant",
+			"style": {
+				"navigationBarTitleText": "添加绿植"
+			}
+		},
+		{
+			"path": "pages/plant/plantDetail",
+			"style": {
+				"navigationBarTitleText": "植物详情"
+			}
+		},
+		{
+			"path": "pages/pet/petDetail",
+			"style": {
+				"navigationBarTitleText": "宠物详情"
+			}
+		},
+		{
+			"path": "pages/pet/addPet",
+			"style": {
+				"navigationBarTitleText": "添加宠物"
+			}
+		},
+		{
+			"path": "pages/my/updateInfo",
+			"style": {
+				"navigationBarTitleText": "修改个人信息"
+			}
+		},
+		{
+			"path": "pages/plant/updatePlant",
+			"style": {
+				"navigationBarTitleText": "修改植物信息"
+			}
+		},
+		{
+			"path": "pages/pet/updatePet",
+			"style": {
+				"navigationBarTitleText": "更新植物信息"
+			}
+		}
+	],
+	"tabBar": {
+		"selectedColor": "#27BA9B",
+		"color": "#2d2d2d",
+		"list": [
+			{
+				"pagePath": "pages/community/community",
+				"text": "社区",
+				"iconPath": "static/images/tabBar/community.png",
+				"selectedIconPath": "static/images/tabBar/community_selected.png"
+			},
+			{
+				"pagePath": "pages/plant/plant",
+				"text": "植物",
+				"iconPath": "static/images/tabBar/plant.png", // #27BA9B
+				"selectedIconPath": "static/images/tabBar/plant_selected.png" // #30f5a7
+			},
+			{
+				"pagePath": "pages/pet/pet",
+				"text": "宠物",
+				"iconPath": "static/images/tabBar/pet.png",
+				"selectedIconPath": "static/images/tabBar/pet_selected.png"
+			},
+			{
+				"pagePath": "pages/my/my",
+				"text": "我的",
+				"iconPath": "static/images/tabBar/my.png",
+				"selectedIconPath": "static/images/tabBar/my_selected.png"
+			}
+		]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#27BA9B",
+		"backgroundColor": "#F8F8F8"
+	}
+}
