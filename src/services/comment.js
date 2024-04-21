@@ -65,3 +65,15 @@ export const postDislikeCommentAPI = (data) => {
 }
 
 
+/** 
+ * 6. 用户发表评论
+*/
+export const postAddCommentAPI = (data) => {
+  return http({
+    method: 'POST',
+    contentType: 'application/json',
+    url: '/comment/addComment',
+    data
+  })
+}
+

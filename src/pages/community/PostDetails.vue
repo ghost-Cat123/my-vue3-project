@@ -18,10 +18,27 @@
       <view class="likeTxt" :style="postStyle">点赞 {{ showLike(postDetail.likeNum) }}</view>
     </view>
     <view class="addPost">
-      <image class="postImg" src="@/static/icon/commentPost.png"></image>
+      <image class="postImg" src="@/static/icon/commentPost.png" @click="clickToSend"></image>
       <view class="postTxt">评论 {{ showLike(commentList.length) }}</view>
     </view>
   </view>
+
+  <!-- 用户评论 -->
+  <!-- 弹出层 -->
+  <uni-popup ref="popup" :mask-click="false" class="uni_popup">
+    <view class="btnBox">
+      <button class="mini-btn cancel" type="primary" size="mini" @click="clickCancel">取消</button>
+      <view class="tittle">
+        <view class="head">写帖子</view>
+        <view class="memberName">用户{{ memberName }}</view>
+      </view>
+      <button class="mini-btn submit" type="primary" size="mini" @click="clickAdd">发布</button>
+    </view>
+    <view class="commentBox">
+      <textarea class="commentText" v-model="sendData.commentContent" maxlength="800" wrap="hard"
+        placeholder="请在此发表你的评论……"></textarea>
+    </view>
+  </uni-popup>
 
   <!-- 评论 -->
   <view class="commentTittle">热门评论</view>
@@ -30,6 +47,7 @@
     <image class="orderImg" src="@/static/icon/sort.png" mode="scaleToFill"></image>
     <view class="orderText">{{ order }}</view>
   </view>
+
   <!-- 评论列表 -->
   <ul class="commentList">
     <li class="commentBox" v-for="comment in commentList" :key="comment.commentId">
@@ -53,7 +71,8 @@
 
 <script>
 import { getFindPostById, postLikePostAPI, postIsLikePostAPI, postDislikePostAPI } from '@/services/post.js'
-import { getFindCommentByLikeAPI, getFindCommentByTimeAPI, postIsLikeCommentAPI, postLikeCommentAPI, postDislikeCommentAPI } from '@/services/comment.js'
+import { getFindCommentByLikeAPI, getFindCommentByTimeAPI, postIsLikeCommentAPI, postLikeCommentAPI, postDislikeCommentAPI, postAddCommentAPI } from '@/services/comment.js'
+import { useMemberStore } from '@/stores/modules/member.js'
 
 export default {
   data() {
@@ -78,6 +97,8 @@ export default {
         color: ''
       }],
 
+      memberName: '',
+
       // 监听数据
       likeImg: '',
       orderState: true,
@@ -92,11 +113,32 @@ export default {
       commentData: {
         commentId: 0,
         memberId: 0
+      },
+
+      sendData: {
+        memberImg: '',
+        postId: 0,
+        commentContent: ''
+      },
+
+      id: {
+        postId: 0
       }
     }
   },
 
   methods: {
+    // 弹出层
+    clickToSend() {
+      this.memberName = useMemberStore().profile.userName
+      this.$refs.popup.open('bottom');
+    },
+
+    clickCancel() {
+      this.$refs.popup.close();
+    },
+
+    // 更改排序方式
     changeOrder() {
       this.orderState = !this.orderState
     },
@@ -154,6 +196,32 @@ export default {
             }
           })
         } else uni.showToast({ url: 'none', title: res.message })
+      }
+    },
+
+    async clickAdd() {
+      this.sendData.memberImg = useMemberStore().profile.userImg
+      this.sendData.postId = this.postDetail.postId
+      this.id.postId = this.postDetail.postId
+      const res = await postAddCommentAPI(this.sendData)
+      if (res.code === 1) { // 发送成功，重新渲染评论列表
+        uni.showToast({ icon: 'success', title: '评论已收到' })
+        // 渲染
+        // 1. 获取该帖评论列表
+        const comment = await getFindCommentByLikeAPI(this.id)
+        this.commentList = comment.data
+        // 2. 查询该用户是否给评论点过赞
+        this.commentList.forEach(async (item) => {
+          this.commentData.commentId = item.commentId
+          const res = await postIsLikeCommentAPI(this.commentData)
+          item.likeComment = res.data
+        })
+        // 清空
+        this.sendData.commentContent = ''
+        // 关闭 弹窗
+        this.$refs.popup.close();
+      } else {
+        uni.showToast({ icon: 'fail', title: res.message })
       }
     }
   },
@@ -345,6 +413,64 @@ export default {
       font-size: 40rpx;
       color: #fff9f9;
       margin-top: 20rpx;
+    }
+  }
+}
+
+// 弹出层
+.uni_popup {
+  .btnBox {
+    float: left;
+    width: 100%;
+    height: 100rpx;
+    background-color: #f6e6e6;
+    text-align: center;
+
+    .cancel {
+      float: left;
+      margin-top: 15rpx;
+      margin-left: 10rpx;
+    }
+
+    .submit {
+      float: right;
+      margin-top: 15rpx;
+      margin-right: 10rpx;
+    }
+
+    .tittle {
+      float: left;
+      width: 230rpx;
+      margin: 1.5% 80rpx;
+      margin-left: 100rpx;
+
+      .head {
+        font-size: 35rpx;
+        margin: 0 auto;
+        margin-bottom: 5rpx;
+      }
+
+      .memberName {
+        font-size: 28rpx;
+        margin: 0 auto;
+        color: #b5a1a1;
+      }
+    }
+  }
+
+  .commentBox {
+    width: 100%;
+    height: 800rpx;
+    background-color: #fff;
+
+    .commentText {
+      width: 95%;
+      height: 550rpx;
+      color: #494747;
+      font-size: 37rpx;
+      padding: 15rpx 20rpx;
+      border: 1px solid black;
+      border-bottom: none;
     }
   }
 }

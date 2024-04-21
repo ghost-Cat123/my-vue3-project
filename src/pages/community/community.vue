@@ -355,11 +355,6 @@ export default {
       border: 1px solid black;
       border-bottom: none;
     }
-
-    .uploadImg {
-      width: 96%;
-      height: 450rpx;
-    }
   }
 }
 </style>
