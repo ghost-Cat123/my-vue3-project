@@ -60,3 +60,51 @@ export const postUpdateMemberAPI = (data) => {
     data
   })
 }
+
+/** 
+ * 6. 用户总评论数
+ */
+export const getTotalCommentAPI = (data) => {
+  return http({
+    method: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/member/totalComment',
+    data
+  })
+}
+
+/** 
+ * 7. 用户被点赞数
+ */
+export const getTotalLikeAPI = (data) => {
+  return http({
+    method: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/member/totalLike',
+    data
+  })
+}
+
+/** 
+ * 8. 用户宠物数量
+ */
+export const getTotalPetAPI = (data) => {
+  return http({
+    method: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/member/totalPet',
+    data
+  })
+}
+
+/** 
+ * 9. 用户植物数量
+ */
+export const getTotalPlantAPI = (data) => {
+  return http({
+    method: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/member/totalPlant',
+    data
+  })
+}

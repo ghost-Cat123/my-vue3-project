@@ -63,6 +63,8 @@
   <view class="postList">
     <view class="myPost">我的评论</view>
     <view class="postBox" v-for="postInfo in postList" :key="postInfo.postId">
+      <image class="deleteIcon" src="@/static/icon/deletePost.png" mode="scaleToFill"
+        @click="confirmDialog(postInfo.postId)"></image>
       <image class="postImg" @click="toCommentDetails(postInfo.postId)" :src="defaultImg(postInfo.memberImg)"
         mode="'scaleToFill'"></image>
       <view class="postTittle">
@@ -70,15 +72,43 @@
         <view class="postTime">{{ postInfo.updateTime }}</view>
       </view>
       <view class="postBr"></view>
-      <view class="postContent">{{ postInfo.postContent }}</view>
+      <view class="postContent" @click="fabClick(postInfo.postId, postInfo.postContent)">{{ postInfo.postContent }}
+      </view>
     </view>
   </view>
+
+  <!-- 确认弹窗 -->
+  <uni-popup ref="alertDialog" type="dialog">
+    <uni-popup-dialog :type="msgType" cancelText="取消" confirmText="删除" title="确认" content="你确定要删除吗"
+      @confirm="deletePost"></uni-popup-dialog>
+  </uni-popup>
+
+  <!-- 提示信息弹窗 -->
+  <uni-popup ref="message" type="message">
+    <uni-popup-message type="warn" :message="popUp.messageText" :duration="2000"></uni-popup-message>
+  </uni-popup>
+
+  <!-- 编辑弹窗 -->
+  <uni-popup ref="popup" :mask-click="false" class="uni_popup">
+    <view class="btnBox">
+      <button class="mini-btn cancel" type="primary" size="mini" @click="clickCancel()">取消</button>
+      <view class="tittle">
+        <view class="head">编辑帖子</view>
+        <view class="memberName">用户{{ userInfo.userName }}</view>
+      </view>
+      <button class="mini-btn submit" type="primary" size="mini" @click="clickSubmit()">发布</button>
+    </view>
+    <view class="commentBox">
+      <textarea class="commentText" v-model="edit.postContent" maxlength="800" wrap="hard"
+        placeholder="请在此输入你想分享的内容……"></textarea>
+    </view>
+  </uni-popup>
 </template>
 
 <script>
 import { useMemberStore } from '@/stores/modules/member.js'
 import { useTokenStore } from '@/stores/modules/token.js'
-import { patchUpdatePwdAPI } from '@/services/member.js'
+import { patchUpdatePwdAPI, getTotalCommentAPI, getTotalLikeAPI, getTotalPetAPI, getTotalPlantAPI } from '@/services/member.js'
 import { getFindByMemberIdAPI, postDeletePostAPI, postEditPostAPI } from '@/services/post.js'
 
 export default {
@@ -90,11 +120,12 @@ export default {
         re_pwd: ''
       },
       userInfo: {
-        userImg: '../../static/images/logo.png',
-        userName: "默认名称",
-        email: '未填写邮箱',
-        userSign: '未填写个性签名',
-        userLoc: '未填写所在地'
+        userId: 0,
+        userImg: '',
+        userName: '',
+        email: '',
+        userSign: '',
+        userLoc: ''
       },
       postList: [{
         memberId: 0,
@@ -104,14 +135,27 @@ export default {
         postContent: ''
       }],
 
+      // 总和信息
       commentNum: 0,
       likeNum: 0,
       petNum: 0,
       plantNum: 0,
 
+      popUp: {
+        msgType: '',
+        messageText: ''
+      },
+
       // 向后端传输数据
       id: {
         memberId: 0
+      },
+      post: {
+        postId: 0
+      },
+      edit: {
+        postId: 0,
+        postContent: ''
       }
     }
   },
@@ -123,6 +167,22 @@ export default {
     toUpdateInfo() {
       uni.navigateTo({ url: '/pages/my/updateInfo' })
     },
+    confirmDialog(postId) {
+      this.post.postId = postId
+      this.$refs.alertDialog.open()
+    },
+    // 弹出弹出层
+    fabClick(id, content) {
+      this.edit.postContent = content
+      this.edit.postId = id
+      this.$refs.popup.open('bottom');
+    },
+    // 关闭弹出层
+    clickCancel() {
+      this.$refs.popup.close();
+    },
+
+    // 异步请求
     async submit() {
       // 修改密码
       const res = await patchUpdatePwdAPI(this.pwd)
@@ -146,6 +206,50 @@ export default {
     async getMyPost() {
       const res = await getFindByMemberIdAPI(this.id)
       this.postList = res.data
+    },
+    async deletePost() {
+      // 修改后端
+      const res = await postDeletePostAPI(this.post)
+      if (res.code === 1) {
+        // 修改前端
+        this.postList = this.postList.filter((post) => post.postId !== this.post.postId)
+        this.popUp.messageText = '删除成功'
+        this.popUp.msgType = 'success'
+        this.$refs.message.open()
+      } else {
+        this.popUp.messageText = '删除失败'
+        this.popUp.msgType = 'error'
+        this.$refs.message.open()
+      }
+    },
+    async clickSubmit() {
+      const res = await postEditPostAPI(this.edit)
+      if (res.code === 1) { // 修改成功
+        this.postList.forEach((post) => {
+          if (post.postId === this.edit.postId)
+            post.postContent = this.edit.postContent
+        })
+        this.$refs.popup.close();
+        this.popUp.messageText = '修改成功'
+        this.popUp.msgType = 'success'
+        this.$refs.message.open()
+      } else {
+        this.$refs.popup.close();
+        this.popUp.messageText = '修改失败'
+        this.popUp.msgType = 'error'
+        this.$refs.message.open()
+      }
+    },
+    async getSum() {
+      const comment = await getTotalCommentAPI(this.id)
+      const like = await getTotalLikeAPI(this.id)
+      const pet = await getTotalPetAPI(this.id)
+      const plant = await getTotalPlantAPI(this.id)
+
+      this.commentNum = comment.data
+      this.likeNum = like.data
+      this.petNum = pet.data
+      this.plantNum = plant.data
     }
   },
 
@@ -160,13 +264,10 @@ export default {
 
   onShow() {
     const member = useMemberStore().profile
-    this.userInfo.userName = member.userName
-    this.userInfo.userImg = member.userImg
-    this.userInfo.email = member.email
-    this.userInfo.userSign = member.userSign
-    this.userInfo.userLoc = member.userLoc
-    this.id.memberId = member.userId
+    this.userInfo = member
+    this.id.memberId = this.userInfo.userId
 
+    this.getSum()
     this.getMyPost()
   },
 }
@@ -406,6 +507,14 @@ export default {
     box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.08);
     background-color: #fff;
 
+    .deleteIcon {
+      position: relative;
+      top: -10rpx;
+      right: -20rpx;
+      width: 60rpx;
+      height: 60rpx;
+    }
+
     .postImg {
       float: left;
       width: 95rpx;
@@ -454,6 +563,65 @@ export default {
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 3;
       overflow: hidden;
+    }
+  }
+}
+
+// 编辑帖子弹出层
+// 弹出层
+.uni_popup {
+  .btnBox {
+    float: left;
+    width: 100%;
+    height: 100rpx;
+    background-color: #f6e6e6;
+    text-align: center;
+
+    .cancel {
+      float: left;
+      margin-top: 15rpx;
+      margin-left: 10rpx;
+    }
+
+    .submit {
+      float: right;
+      margin-top: 15rpx;
+      margin-right: 10rpx;
+    }
+
+    .tittle {
+      float: left;
+      width: 230rpx;
+      margin: 1.5% 80rpx;
+      margin-left: 100rpx;
+
+      .head {
+        font-size: 35rpx;
+        margin: 0 auto;
+        margin-bottom: 5rpx;
+      }
+
+      .memberName {
+        font-size: 28rpx;
+        margin: 0 auto;
+        color: #b5a1a1;
+      }
+    }
+  }
+
+  .commentBox {
+    width: 100%;
+    height: 800rpx;
+    background-color: #fff;
+
+    .commentText {
+      width: 95%;
+      height: 550rpx;
+      color: #494747;
+      font-size: 37rpx;
+      padding: 15rpx 20rpx;
+      border: 1px solid black;
+      border-bottom: none;
     }
   }
 }

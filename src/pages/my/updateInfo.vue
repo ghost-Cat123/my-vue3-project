@@ -5,7 +5,8 @@
       <uni-forms :modelValue="userInfo">
         <uni-forms-item name="userImg" class="items" label="用户头像">
           <uni-file-picker limit="1" :del-icon="false" disable-preview :imageStyles="imageStyles" file-mediatype="image"
-            file-extname="png,jpg" ref="files" :auto-upload="false" @select="selectFile">选择</uni-file-picker>
+            v-model="userInfo.userImg" file-extname="png,jpg" ref="files" :auto-upload="false"
+            @select="selectFile">选择</uni-file-picker>
         </uni-forms-item>
 
         <uni-forms-item name="userName" class="items" label="用户名">
@@ -35,18 +36,16 @@ import { useMemberStore } from '@/stores/modules/member.js'
 import { useTokenStore } from '@/stores/modules/token.js'
 import { postUpdateMemberAPI } from '@/services/member.js'
 
-const member = useMemberStore().profile
-
 export default {
   data() {
     return {
       userInfo: {
-        userId: member.userId,
-        userName: member.userName,
-        userImg: member.userImg,
-        userLoc: member.userLoc,
-        email: member.email,
-        userSign: member.userSign
+        userId: 0,
+        userName: '',
+        userImg: '',
+        userLoc: '',
+        email: '',
+        userSign: ''
       },
       imageStyles: {
         width: 90,
@@ -120,6 +119,11 @@ export default {
         }
       }
     }
+  },
+
+  onShow() {
+    const member = useMemberStore().profile
+    this.userInfo = member
   }
 }
 </script>

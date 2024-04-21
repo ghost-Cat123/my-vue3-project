@@ -116,7 +116,7 @@ export const postDeletePostAPI = (data) => {
   return http({
     method: 'POST',
     contentType: 'application/x-www-form-urlencoded',
-    url: '/post/dislikePost',
+    url: '/post/deletePost',
     data
   })
 }
