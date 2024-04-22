@@ -24,7 +24,7 @@
       </view>
 
       <view class="opeBox">
-        <view class="ope" @click="finishTask(task.taskId)">
+        <view class="ope" @click="finishTask(task.taskId, task.taskState)">
           <image class="opeImg" src="@/static/icon/finishTask.png"></image>
           <view class="opeTxt">完成</view>
         </view>
@@ -88,10 +88,8 @@
       <view class="uploadImg">
         <uni-file-picker class="img" limit="9"></uni-file-picker>
       </view>
+      <!-- 图片显示 -->
       <view class="imagesBox">
-        <image class="image"></image>
-        <image class="image"></image>
-        <image class="image"></image>
         <image class="image"></image>
       </view>
     </view>
@@ -107,6 +105,7 @@
 
 <script>
 import { getPlantInfoAPI, postAddPlantTaskAPI, getPlantTaskAPI, postUpdatePlantTaskAPI, postDeleteTaskAPI, postFinishTaskAPI, postPlantNoteUpdateAPI } from '@/services/plant.js'
+import { usePlantStore } from '@/stores/modules/plant'
 
 export default {
   data() {
@@ -158,6 +157,9 @@ export default {
         plantNote: '测试笔记',
         plantId: 0
       },
+      virtueUrls: {
+        file: []
+      }
     }
   },
 
@@ -199,21 +201,7 @@ export default {
     },
 
     updatePlant() {
-      uni.navigateTo({
-        url: '/pages/plant/updatePlant',
-        success: (res) => {
-          res.eventChannel.emit('addInfo', {
-            // 需要传给更新页面的信息
-            id: this.id.plantId,
-            ename: this.plantInfo.plantEname,
-            cname: this.plantInfo.plantCname,
-            img: this.plantInfo.plantImg,
-            loc: this.plantInfo.plantLoc,
-            intro: this.plantInfo.plantIntro,
-            age: this.plantInfo.plantAge
-          })
-        },
-      })
+      uni.navigateTo({ url: '/pages/plant/updatePlant'})
     },
 
     async addTask() {
@@ -231,19 +219,22 @@ export default {
         this.taskFormData.expireTime = ''
       }
     },
-    async finishTask(taskId) {
-      // 修改数据库
-      this.task.taskId = taskId
-      const res = await postFinishTaskAPI(this.task)
-      if (res.code === 1) {
-        // 修改前端
-        this.taskList.forEach((task) => {
-          if (task.taskId === taskId) {
-            task.taskState = false
-          }
-        })
-      } else {
-        uni.showToast({ icon: 'fail', tittle: res.message })
+
+    async finishTask(taskId, taskState) {
+      if (taskState === true) {
+        // 修改数据库
+        this.task.taskId = taskId
+        const res = await postFinishTaskAPI(this.task)
+        if (res.code === 1) {
+          // 修改前端
+          this.taskList.forEach((task) => {
+            if (task.taskId === taskId) {
+              task.taskState = false
+            }
+          })
+        } else {
+          uni.showToast({ icon: 'fail', tittle: res.message })
+        }
       }
     },
 
@@ -290,43 +281,33 @@ export default {
         this.note.plantNote = ''
         uni.showToast({ icon: 'none', tittle: res.message })
       }
-    }
-  },
+    },
 
-  //// TODO
-  onShow() {
-    let eventChannel = this.getOpenerEventChannel()
-    // 监听fresh事件，获取上一页面通过eventChannel传送到当前页面的数据
-    let data = {}
-    // 后触发
-    eventChannel.on('showDetail', function (res) {
-      data.id = res.id
-      data.ename = res.ename
-      data.cname = res.cname
-      data.img = res.img
-      data.loc = res.loc
-    })
-
-    // 先触发
-    setTimeout(async () => {
-      this.id.plantId = data.id
-      this.plantInfo.plantEname = data.ename
-      this.plantInfo.plantCname = data.cname
-      this.plantInfo.plantImg = data.img
-      this.plantInfo.plantLoc = data.loc
-
+    async showPlantDetail() {
       const res = await getPlantInfoAPI(this.id)
       const task = await getPlantTaskAPI(this.id)
       if (res.code === 1) {
         this.plantInfo.plantAge = res.data.plantAge
         this.plantInfo.plantIntro = res.data.plantIntro
         this.note.plantNote = res.data.plantNote
-
         this.taskList = task.data;
       } else {
         uni.showToast({ icon: 'none', tittle: res.message })
       }
-    }, 300)
+    }
+  },
+
+  //// TODO
+  onShow() {
+    // 接收pinia中的值
+    const plantInfo = usePlantStore().plant
+    this.id.plantId = plantInfo.plantId
+    this.plantInfo.plantEname = plantInfo.plantEname
+    this.plantInfo.plantCname = plantInfo.plantCname
+    this.plantInfo.plantImg = plantInfo.plantImg
+    this.plantInfo.plantLoc = plantInfo.plantLoc
+
+    this.showPlantDetail()
   }
 }
 </script>

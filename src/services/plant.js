@@ -51,6 +51,18 @@ export const getPlantInfoAPI = (data) => {
 }
 
 /** 
+ * 查询未完成的植物任务数
+ */
+// export const getUnfinishedTaskAPI = (data) => {
+//   return http({
+//     method: 'GET',
+//     contentType: 'application/x-www-form-urlencoded',
+//     url: '/plant/unfinishedTask',
+//     data
+//   })
+// }
+
+/** 
  * 5. 修改植物笔记
  */
 export const postPlantNoteUpdateAPI = (data) => {

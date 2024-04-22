@@ -73,6 +73,7 @@
 import { getFindPostById, postLikePostAPI, postIsLikePostAPI, postDislikePostAPI } from '@/services/post.js'
 import { getFindCommentByLikeAPI, getFindCommentByTimeAPI, postIsLikeCommentAPI, postLikeCommentAPI, postDislikeCommentAPI, postAddCommentAPI } from '@/services/comment.js'
 import { useMemberStore } from '@/stores/modules/member.js'
+import { usePostStore } from '@/stores/modules/post.js'
 
 export default {
   data() {
@@ -87,6 +88,7 @@ export default {
         createTime: '',
         likeNum: 0
       },
+
       commentList: [],
 
       postStyle: {
@@ -143,6 +145,7 @@ export default {
       this.orderState = !this.orderState
     },
 
+    // 异步请求
     // 用户点赞发帖逻辑
     async postLike() {
       if (this.likePost === false) { // 没有点过赞 点击则点赞
@@ -223,6 +226,27 @@ export default {
       } else {
         uni.showToast({ icon: 'fail', title: res.message })
       }
+    },
+
+    async showInfo() {
+      // 获取该帖评论列表
+      const comment = await getFindCommentByLikeAPI(this.id)
+      this.commentList = comment.data
+
+      // 查询该用户是否给该帖子点过赞
+      this.postData.memberId = useMemberStore().profile.userId
+      this.commentData.memberId = useMemberStore().profile.userId
+      const res = await postIsLikePostAPI(this.postData)
+      if (res.data === true) { // 说明已经点过赞了
+        this.likePost = true
+      } else this.likePost = false
+
+      // 查询该用户是否给评论点过赞
+      this.commentList.forEach(async (item) => {
+        this.commentData.commentId = item.commentId
+        const res = await postIsLikeCommentAPI(this.commentData)
+        item.likeComment = res.data
+      })
     }
   },
 
@@ -273,39 +297,16 @@ export default {
   },
 
   onShow() {
-    let eventChannel = this.getOpenerEventChannel()
-    // 监听fresh事件，获取上一页面通过eventChannel传送到当前页面的数据
-    let data = {}
-    // 后触发
-    eventChannel.on('PostDetail', function (res) {
-      data.postId = res.id
-    })
-    // 先触发
-    setTimeout(async () => {
-      // 获取发帖详细信息
-      const post = await getFindPostById(data)
-      this.postDetail = post.data
+    // 接收pinia中的数据
+    const postInfo = usePostStore()
+    this.postDetail = postInfo.post
+    // 后端传值数据
+    this.id.postId = postInfo.post.postId
+    this.postData.postId = postInfo.post.postId
+    this.sendData.postId = postInfo.post.postId
 
-      // 获取该帖评论列表
-      const comment = await getFindCommentByLikeAPI(data)
-      this.commentList = comment.data
-
-      // 查询该用户是否给该帖子点过赞
-      this.postData.postId = this.postDetail.postId
-      this.postData.memberId = this.postDetail.memberId
-      this.commentData.memberId = this.postDetail.memberId
-      const res = await postIsLikePostAPI(this.postData)
-      if (res.data === true) { // 说明已经点过赞了
-        this.likePost = true
-      } else this.likePost = false
-
-      // 查询该用户是否给评论点过赞
-      this.commentList.forEach(async (item) => {
-        this.commentData.commentId = item.commentId
-        const res = await postIsLikeCommentAPI(this.commentData)
-        item.likeComment = res.data
-      })
-    }, 400)
+    // 渲染评论和点赞信息
+    this.showInfo()
   }
 }
 </script>

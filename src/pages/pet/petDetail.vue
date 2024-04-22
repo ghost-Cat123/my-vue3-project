@@ -106,6 +106,7 @@
 
 <script>
 import { getPetInfoAPI, postAddPetTaskAPI, getPetTaskAPI, postUpdatePetTaskAPI, postDeleteTaskAPI, postFinishTaskAPI, postPetNoteUpdateAPI } from '@/services/pet.js'
+import { usePetStore } from '@/stores/modules/pet.js'
 
 export default {
   data() {
@@ -290,44 +291,33 @@ export default {
         this.note.petNote = ''
         uni.showToast({ icon: 'none', tittle: res.message })
       }
-    }
-  },
+    },
 
-  //// TODO
-  onShow() {
-    let eventChannel = this.getOpenerEventChannel()
-    // 监听fresh事件，获取上一页面通过eventChannel传送到当前页面的数据
-    let data = {}
-    // 后触发
-    eventChannel.on('showDetail', function (res) {
-      data.id = res.id
-      data.ename = res.ename
-      data.cname = res.cname
-      data.img = res.img
-      data.type = res.type
-    })
-
-    // 先触发
-    setTimeout(async () => {
-      this.id.petId = data.id
-      this.petInfo.petEname = data.ename
-      this.petInfo.petCname = data.cname
-      this.petInfo.petImg = data.img
-      this.petInfo.petType = data.type
-
+    async showPetDetail() {
       const res = await getPetInfoAPI(this.id)
       const task = await getPetTaskAPI(this.id)
       if (res.code === 1) {
         this.petInfo.petAge = res.data.petAge
         this.petInfo.petIntro = res.data.petIntro
         this.note.petNote = res.data.petNote
-
         this.taskList = task.data;
-        console.log(this.taskList);
       } else {
         uni.showToast({ icon: 'none', tittle: res.message })
       }
-    }, 400)
+    }
+  },
+
+  //// TODO
+  onShow() {
+    // 接收pinia中的值
+    const petInfo = usePetStore().pet
+    this.id.petId = petInfo.petId
+    this.petInfo.petEname = petInfo.petEname
+    this.petInfo.petCname = petInfo.petCname
+    this.petInfo.petImg = petInfo.petImg
+    this.petInfo.petType = petInfo.petType
+
+    this.showPetDetail()
   }
 }
 </script>

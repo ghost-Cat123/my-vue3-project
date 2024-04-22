@@ -17,7 +17,7 @@
   </view>
 
   <view class="postBox" v-for="postInfo in postList" :key="postInfo.postId">
-    <image class="postImg" @click="toCommentDetails(postInfo.postId)" :src="defaultImg(postInfo.memberImg)"
+    <image class="postImg" @click="toCommentDetails(postInfo)" :src="defaultImg(postInfo.memberImg)"
       mode="'scaleToFill'"></image>
     <view class="postTittle">
       <view class="postName">{{ postInfo.memberName }}</view>
@@ -51,6 +51,7 @@
 <script lang="js">
 import { getFindAllByLikeAPI, getFindAllByTimeAPI, postFuzzyQueryAPI, postSendPostAPI } from '@/services/post.js'
 import { useMemberStore } from '@/stores/modules/member.js'
+import { usePostStore } from '@/stores/modules/post.js'
 
 export default {
   data() {
@@ -85,16 +86,14 @@ export default {
 
   methods: {
     // 跳转到评论详情页
-    toCommentDetails(possId) {
+    toCommentDetails(postInfo) {
       uni.showToast({ icon: 'loading', title: '加载评论详情' })
-      uni.navigateTo({
-        url: '/pages/community/PostDetails',
-        success: (res) => {
-          res.eventChannel.emit('PostDetail', {
-            id: possId
-          })
-        },
-      })
+      const post = usePostStore()
+      post.clearPost()
+      post.setPost(postInfo)
+      setTimeout(() => {
+        uni.navigateTo({ url: '/pages/community/PostDetails' })
+      }, 200)
     },
 
     // 弹出弹出层

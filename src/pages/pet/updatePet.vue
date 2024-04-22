@@ -36,8 +36,9 @@
 </template>
 
 <script>
-import { postPetInfoUpdateAPI } from '@/services/pet.js'
+import { postPetInfoUpdateAPI, getPetInfoAPI } from '@/services/pet.js'
 import { useTokenStore } from '@/stores/modules/token.js'
+import { usePetStore } from '@/stores/modules/pet.js'
 
 
 export default {
@@ -80,6 +81,9 @@ export default {
       petImg: {
         fileId: 0,
         url: ''
+      },
+      id: {
+        petId: 0
       }
     }
   },
@@ -142,38 +146,25 @@ export default {
         }
       }
     },
+
+    async showPetDetail() {
+      // 结构data
+      const res = await getPetInfoAPI(this.id)
+      this.petInfo.petAge = res.data.petAge
+      this.petInfo.petIntro = res.data.petIntro
+    }
   },
 
   // 生命周期钩子函数
   onShow() {
-    let eventChannel = this.getOpenerEventChannel()
-    // 监听fresh事件，获取上一页面通过eventChannel传送到当前页面的数据
-    // 局部变量接收传递数据
-    let data = this.petInfo
-    // 后触发 此时页面数据与 页面方法还未渲染
-    eventChannel.on('addInfo', function (res) {
-      // res为接收信息
-      data.id = res.id
-      data.ename = res.ename
-      data.cname = res.cname
-      data.img = res.img
-      data.type = res.type
-      data.intro = res.intro
-      data.age = res.age
-    })
+    // 接收pinia中的数据 优化为发一次请求
+    const petInfo = usePetStore()
+    this.id.petId = petInfo.pet.petId
+    this.petInfo = petInfo.pet
+    this.petImg.url = petInfo.pet.petImg
 
-    // 先触发 延时 变成后触发
-    setTimeout(() => {
-      // 接收上一页面数据
-      this.petInfo.petId = data.id
-      this.petInfo.petEname = data.ename
-      this.petInfo.petCname = data.cname
-      this.petInfo.petImg = data.img
-      this.petInfo.petType = data.type
-      this.petInfo.petIntro = data.intro
-      this.petInfo.petAge = data.age
-      this.petImg.url = data.img
-    }, 500)
+    // 发请求获取植物年龄和植物简介
+    this.showPetDetail()
   }
 }
 

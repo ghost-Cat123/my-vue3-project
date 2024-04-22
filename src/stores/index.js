@@ -12,3 +12,6 @@ export default pinia
 // 模块统一导出
 export * from './modules/member.js'
 export * from './modules/token.js'
+export * from './modules/plant.js'
+export * from './modules/pet.js'
+export * from './modules/post.js'

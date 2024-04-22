@@ -60,6 +60,7 @@
 
 <script>
 import { getPetListAPI, postPetDeleteAPI } from '@/services/pet.js'
+import { usePetStore } from '@/stores/modules/pet.js'
 
 export default {
   data() {
@@ -85,21 +86,13 @@ export default {
     },
 
     petDetail(item) {
-      // uni.showToast({ icon: 'loading', title: '正在加载植物信息' })
       // 向植物详情页面传值
+      // 向植物详情页面传值
+      const petInfo = usePetStore()
+      petInfo.clearPet()
+      petInfo.setPet(item)
       // 页面跳转
-      uni.navigateTo({
-        url: '/pages/pet/petDetail',
-        success: (res) => {
-          res.eventChannel.emit('showDetail', {
-            id: item.petId,
-            ename: item.petEname,
-            cname: item.petCname,
-            img: item.petImg,
-            type: item.petType
-          })
-        },
-      })
+      uni.navigateTo({ url: '/pages/pet/petDetail' })
     },
 
     async getPetList() {

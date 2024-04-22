@@ -9,6 +9,7 @@
     <ul class="infoList" v-if="list1.length > 0">
       <li class="infoBox" v-for="item in list1" :key="item.plantId">
         <image @click="plantDetail(item)" class="img" :src="item.plantImg"></image>
+        <uni-badge class="dot" :text="item.unfinishedTask" />
         <view class="chineseName">{{ item.plantCname }}</view>
         <view class="englishName">{{ item.plantEname }}</view>
         <button @click="deletePlant(item.plantId, 1)" class="mini-btn" type="primary" size="mini">删除</button>
@@ -70,6 +71,7 @@
 
 <script>
 import { getPlantListAPI, postPlantDeleteAPI } from '@/services/plant.js'
+import { usePlantStore } from '@/stores/modules/plant.js'
 
 export default {
   data() {
@@ -96,26 +98,22 @@ export default {
     },
 
     plantDetail(item) {
-      // uni.showToast({ icon: 'loading', title: '正在加载植物信息' })
       // 向植物详情页面传值
+      const plantInfo = usePlantStore()
+      plantInfo.clearPlant()
+      plantInfo.setPlant(item)
       // 页面跳转
-      uni.navigateTo({
-        url: '/pages/plant/plantDetail',
-        success: (res) => {
-          res.eventChannel.emit('showDetail', {
-            id: item.plantId,
-            ename: item.plantEname,
-            cname: item.plantCname,
-            img: item.plantImg,
-            loc: item.plantLoc
-          })
-        },
-      })
+      uni.navigateTo({url: '/pages/plant/plantDetail'})
     },
 
     async getPlantList() {
       let res = await getPlantListAPI()
       this.plantList = res.data
+      // this.plantList.forEach(async (plant) => {
+      //   this.data.plantId = plant.plantId
+      //   const unfinishedTask = await getUnfinishedTaskAPI(this.data)
+      //   plant.unfinishedTask = unfinishedTask.data
+      // })
       this.list1 = this.plantList.filter((item) => item.plantLoc === '阳台')
       this.list2 = this.plantList.filter((item) => item.plantLoc === '书房')
       this.list3 = this.plantList.filter((item) => item.plantLoc === '客厅')
@@ -210,6 +208,12 @@ export default {
         background-color: #456545;
         border-radius: 10%;
         float: left;
+      }
+
+      .dot {
+        position: relative;
+        top: -20rpx;
+        right: 202rpx;
       }
 
       .chineseName {

@@ -36,9 +36,9 @@
 </template>
 
 <script>
-import { postPlantInfoUpdateAPI } from '@/services/plant.js'
+import { postPlantInfoUpdateAPI, getPlantInfoAPI } from '@/services/plant.js'
 import { useTokenStore } from '@/stores/modules/token.js'
-
+import { usePlantStore } from '@/stores/modules/plant'
 
 export default {
   // 数据
@@ -81,6 +81,9 @@ export default {
       plantImg: {
         fileId: 0,
         url: ''
+      },
+      id: {
+        plantId: 0
       }
     }
   },
@@ -143,38 +146,25 @@ export default {
         }
       }
     },
+
+    async showPlantDetail() {
+      // 结构data
+      const res = await getPlantInfoAPI(this.id)
+      this.plantInfo.plantAge = res.data.plantAge
+      this.plantInfo.plantIntro = res.data.plantIntro
+    }
   },
 
   // 生命周期钩子函数
   onShow() {
-    let eventChannel = this.getOpenerEventChannel()
-    // 监听fresh事件，获取上一页面通过eventChannel传送到当前页面的数据
-    // 局部变量接收传递数据
-    let data = this.plantInfo
-    // 后触发 此时页面数据与 页面方法还未渲染
-    eventChannel.on('addInfo', function (res) {
-      // res为接收信息
-      data.id = res.id
-      data.ename = res.ename
-      data.cname = res.cname
-      data.img = res.img
-      data.loc = res.loc
-      data.intro = res.intro
-      data.age = res.age
-    })
+    // 接收pinia中的数据 优化为发一次请求
+    const plantInfo = usePlantStore()
+    this.id.plantId = plantInfo.plant.plantId
+    this.plantInfo = plantInfo.plant
+    this.plantImg.url = plantInfo.plant.plantImg
 
-    // 先触发 延时 变成后触发
-    setTimeout(() => {
-      // 接收上一页面数据
-      this.plantInfo.plantId = data.id
-      this.plantInfo.plantEname = data.ename
-      this.plantInfo.plantCname = data.cname
-      this.plantInfo.plantImg = data.img
-      this.plantInfo.plantLoc = data.loc
-      this.plantInfo.plantIntro = data.intro
-      this.plantInfo.plantAge = data.age
-      this.plantImg.url = data.img
-    }, 500)
+    // 发请求获取植物年龄和植物简介
+    this.showPlantDetail()
   }
 }
 
