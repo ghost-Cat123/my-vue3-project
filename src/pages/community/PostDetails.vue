@@ -29,7 +29,7 @@
     <view class="btnBox">
       <button class="mini-btn cancel" type="primary" size="mini" @click="clickCancel">取消</button>
       <view class="tittle">
-        <view class="head">写帖子</view>
+        <view class="head">写评论</view>
         <view class="memberName">用户{{ memberName }}</view>
       </view>
       <button class="mini-btn submit" type="primary" size="mini" @click="clickAdd">发布</button>
@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { getFindPostById, postLikePostAPI, postIsLikePostAPI, postDislikePostAPI } from '@/services/post.js'
+import { postLikePostAPI, postIsLikePostAPI, postDislikePostAPI } from '@/services/post.js'
 import { getFindCommentByLikeAPI, getFindCommentByTimeAPI, postIsLikeCommentAPI, postLikeCommentAPI, postDislikeCommentAPI, postAddCommentAPI } from '@/services/comment.js'
 import { useMemberStore } from '@/stores/modules/member.js'
 import { usePostStore } from '@/stores/modules/post.js'

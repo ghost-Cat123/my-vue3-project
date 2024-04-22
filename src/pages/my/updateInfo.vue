@@ -4,8 +4,7 @@
     <view class="form">
       <uni-forms :modelValue="userInfo">
         <uni-forms-item name="userImg" class="items" label="用户头像">
-          <uni-file-picker limit="1" :del-icon="false" disable-preview :imageStyles="imageStyles" file-mediatype="image"
-            v-model="userInfo.userImg" file-extname="png,jpg" ref="files" :auto-upload="false"
+          <uni-file-picker limit="1" :del-icon="false" disable-preview :imageStyles="imageStyles" file-mediatype="image" v-model="memberImg" file-extname="png,jpg" :auto-upload="false"
             @select="selectFile">选择</uni-file-picker>
         </uni-forms-item>
 
@@ -53,6 +52,10 @@ export default {
         border: {
           radius: '50%'
         },
+      },
+      memberImg: {
+        fileId: 0,
+        url: ''
       },
       virtueUrl: {
         file: ''
@@ -124,6 +127,7 @@ export default {
   onShow() {
     const member = useMemberStore().profile
     this.userInfo = member
+    this.memberImg.url = member.userImg
   }
 }
 </script>

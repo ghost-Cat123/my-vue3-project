@@ -35,7 +35,7 @@
   </view>
 
   <!-- 添加任务 弹出框-->
-  <uni-popup ref="popup">
+  <uni-popup ref="pwd">
     <view class="taskBox">
       <view class="addTittle">修改密码</view>
       <uni-forms class="form" ref="baseForm" :modelValue="pwd">
@@ -161,12 +161,21 @@ export default {
   },
 
   methods: {
+    // 修改密码弹出层
     popUpUpdate() {
-      this.$refs.popup.open('bottom')
+      this.$refs.pwd.open('bottom')
     },
+    // 关闭弹出层
+    clickCancel() {
+      this.$refs.pwd.close();
+    },
+
+    // 页面跳转
     toUpdateInfo() {
       uni.navigateTo({ url: '/pages/my/updateInfo' })
     },
+
+    // 删除帖子提示弹出层
     confirmDialog(postId) {
       this.post.postId = postId
       this.$refs.alertDialog.open()
@@ -177,12 +186,10 @@ export default {
       this.edit.postId = id
       this.$refs.popup.open('bottom');
     },
-    // 关闭弹出层
-    clickCancel() {
-      this.$refs.popup.close();
-    },
+    
 
     // 异步请求
+    // 修改用户密码
     async submit() {
       // 修改密码
       const res = await patchUpdatePwdAPI(this.pwd)
@@ -203,10 +210,14 @@ export default {
         uni.showToast({ icon: 'none', title: res.message })
       }
     },
+
+    // 获取我的发帖 
     async getMyPost() {
       const res = await getFindByMemberIdAPI(this.id)
       this.postList = res.data
     },
+
+    // 删除帖子
     async deletePost() {
       // 修改后端
       const res = await postDeletePostAPI(this.post)
@@ -222,6 +233,8 @@ export default {
         this.$refs.message.open()
       }
     },
+
+    // 编辑发帖
     async clickSubmit() {
       const res = await postEditPostAPI(this.edit)
       if (res.code === 1) { // 修改成功
@@ -240,6 +253,8 @@ export default {
         this.$refs.message.open()
       }
     },
+
+    // 获取总数
     async getSum() {
       const comment = await getTotalCommentAPI(this.id)
       const like = await getTotalLikeAPI(this.id)
@@ -262,6 +277,7 @@ export default {
     },
   },
 
+  // 初始化界面
   onShow() {
     const member = useMemberStore().profile
     this.userInfo = member
