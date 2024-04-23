@@ -83,17 +83,39 @@
 
   <view class="tools">
     <view class="tittle">笔记与照片</view>
+    <button class="upload" size="mini" @click="uploadFiles">上传</button>
+    <!-- 图片上传 -->
     <view class="picture">
       <!-- 图片上传组件 -->
       <view class="uploadImg">
-        <uni-file-picker class="img" limit="9"></uni-file-picker>
+        <uni-file-picker class="img" limit="9" file-mediatype="image" file-extname="png,jpg" ref="files"
+          :auto-upload="false" @select="selectFiles"></uni-file-picker>
       </view>
-      <!-- 图片显示 -->
-      <view class="imagesBox">
-        <image class="image"></image>
+      <!-- 图片显示"-->
+      <view class="imagesList">
+        <view class="imgBox" v-for="plantImg in plantImgs" :key="plantImg.imgId">
+          <image class="image-my" :src="plantImg.imgUrl" mode="scaleToFill">
+            <image class="deleteIcon" src="@/static/icon/deletePost.png" mode="scaleToFill"
+              @click="confirmDialog(plantImg.imgId)"></image>
+          </image>
+        </view>
       </view>
     </view>
+
+    <!-- 确认弹窗 -->
+    <uni-popup ref="alertDialog" type="dialog">
+      <uni-popup-dialog :type="msgType" cancelText="取消" confirmText="删除" title="确认" content="你确定要删除吗"
+        @confirm="deleteImg"></uni-popup-dialog>
+    </uni-popup>
+
+    <!-- 提示信息弹窗 -->
+    <uni-popup ref="message" type="message">
+      <uni-popup-message type="warn" :message="popUp.messageText" :duration="2000"></uni-popup-message>
+    </uni-popup>
+
     <view class="br"></view>
+
+    <!-- 笔记记录 -->
     <view class="noteBox">
       <view class="tips">我的笔记</view>
       <button class="saveNote" size="mini" @click="saveNote()">保存</button>
@@ -104,8 +126,9 @@
 </template>
 
 <script>
-import { getPlantInfoAPI, postAddPlantTaskAPI, getPlantTaskAPI, postUpdatePlantTaskAPI, postDeleteTaskAPI, postFinishTaskAPI, postPlantNoteUpdateAPI } from '@/services/plant.js'
+import { getPlantInfoAPI, postAddPlantTaskAPI, getPlantTaskAPI, postUpdatePlantTaskAPI, postDeleteTaskAPI, postFinishTaskAPI, postPlantNoteUpdateAPI, getFindPlantImgs, postAddPlantImgs, postDeletePlantImgs } from '@/services/plant.js'
 import { usePlantStore } from '@/stores/modules/plant'
+import { useTokenStore } from '@/stores/modules/token.js'
 
 export default {
   data() {
@@ -122,6 +145,11 @@ export default {
           radius: 2
         }
       },
+      popUp: {
+        msgType: '',
+        messageText: ''
+      },
+
       taskList: [
         {
           taskName: '任务',
@@ -130,6 +158,12 @@ export default {
           taskState: true,
         },
       ],
+      plantImgs: [{
+        imgId: 0,
+        plantId: 0,
+        imgUrl: ''
+      }],
+
       // 基础表单数据
       taskFormData: {
         taskName: '',
@@ -146,6 +180,7 @@ export default {
         plantIntro: '这是植物简介这是植物简介这是植物简介这是植物简介这是植物简介'
       },
       num: 0,
+
       // 向后端传输的对象
       id: {
         plantId: 0
@@ -157,8 +192,15 @@ export default {
         plantNote: '测试笔记',
         plantId: 0
       },
-      virtueUrls: {
-        file: []
+      virtueUrls: [],
+      // 删除图片
+      image: {
+        imgId: 0
+      },
+      // 批量增加图片
+      imgData: {
+        plantId: 0,
+        imgUrl: ''
       }
     }
   },
@@ -189,10 +231,12 @@ export default {
   },
 
   methods: {
+    // 添加任务弹出框
     popUpAdd() {
       this.$refs.popup.open('bottom')
     },
 
+    // 弹出修改
     toUpdateTask(task) {
       this.taskFormData.taskName = task.taskName
       this.taskFormData.expireTime = task.expireTime
@@ -200,8 +244,61 @@ export default {
       this.$refs.popUpdate.open('bottom')
     },
 
+    // 跳转界面
     updatePlant() {
-      uni.navigateTo({ url: '/pages/plant/updatePlant'})
+      uni.navigateTo({ url: '/pages/plant/updatePlant' })
+    },
+
+    // 提示框
+    confirmDialog(imgId) {
+      this.image.imgId = imgId
+      this.$refs.alertDialog.open()
+    },
+
+    // 图片上传
+    selectFiles(e) {
+      for (let tempFile of e.tempFiles) {
+        // 获取单个虚拟地址
+        this.virtueUrls.push(tempFile.file.path)
+      }
+    },
+
+    async uploadFiles() {
+      for (let virtueUrl of this.virtueUrls) {
+        // 获取token
+        const tokenStore = useTokenStore()
+        const token = tokenStore.token
+        console.log(virtueUrl);
+        // 先上传阿里云服务器， 获取图片地址
+        if (virtueUrl !== null) {
+          uni.uploadFile({
+            url: 'http://localhost:8080/comment/upload',
+            filePath: virtueUrl,
+            name: 'file',
+            header: {
+              'source-client': 'miniapp',
+              'Authorization': token,
+              "Content-Type": "multipart/form-data"
+            },
+            success: async (res) => {
+              // 将返回的字符串转化为JSON
+              // 过滤特殊符号
+              let data = JSON.parse(res.data.replace('\uFEFF', ''))
+              if (data.code === 1) {
+                // 加入url
+                this.imgData.imgUrl = data.data
+                console.log(this.imgData.imgUrl);
+                await postAddPlantImgs(this.imgData)
+              } else {
+                uni.showToast({ icon: 'none', title: '图片上传失败' })
+              }
+            }
+          })
+        } else uni.showToast({ icon: 'fail', title: '图片上传失败' })
+      }
+      setTimeout(() => {
+        this.showPlantImg()
+      }, 500);
     },
 
     async addTask() {
@@ -294,10 +391,30 @@ export default {
       } else {
         uni.showToast({ icon: 'none', tittle: res.message })
       }
+    },
+
+    async deleteImg() {
+      // 修改后端
+      const res = await postDeletePlantImgs(this.image)
+      if (res.code === 1) {
+        // 修改前端
+        this.plantImgs = this.plantImgs.filter((image) => image.imgId !== this.image.imgId)
+        this.popUp.messageText = '删除成功'
+        this.popUp.msgType = 'success'
+        this.$refs.message.open()
+      } else {
+        this.popUp.messageText = '删除失败'
+        this.popUp.msgType = 'error'
+        this.$refs.message.open()
+      }
+    },
+
+    async showPlantImg() {
+      const res = await getFindPlantImgs(this.id)
+      this.plantImgs = res.data
     }
   },
 
-  //// TODO
   onShow() {
     // 接收pinia中的值
     const plantInfo = usePlantStore().plant
@@ -307,7 +424,10 @@ export default {
     this.plantInfo.plantImg = plantInfo.plantImg
     this.plantInfo.plantLoc = plantInfo.plantLoc
 
+    this.imgData.plantId = plantInfo.plantId
+
     this.showPlantDetail()
+    this.showPlantImg()
   }
 }
 </script>
@@ -529,6 +649,17 @@ export default {
     font-weight: 900;
   }
 
+  .upload {
+    float: right;
+    height: 60rpx;
+    width: 150rpx;
+    color: #fff;
+    font-size: 30rpx;
+    margin-right: 10rpx;
+    margin-top: -45rpx;
+    background-color: #27BA9B;
+  }
+
   .picture {
     float: left;
     width: 100%;
@@ -538,17 +669,30 @@ export default {
       background-color: #ccc;
     }
 
-    .imagesBox {
+    .imagesList {
       width: 100%;
 
-      .image {
+      .imgBox {
         float: left;
         width: 220rpx;
         height: 220rpx;
         border-radius: 20rpx;
-        background-color: #bbd27a;
-        margin-left: 12rpx;
+        margin-left: 5rpx;
         margin-top: 8rpx;
+        overflow: hidden;
+
+        .image-my {
+          width: 220rpx;
+          height: 220rpx;
+
+          .deleteIcon {
+            position: relative;
+            bottom: 221rpx;
+            right: -172rpx;
+            width: 50rpx;
+            height: 50rpx;
+          }
+        }
       }
     }
   }

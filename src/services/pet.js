@@ -74,9 +74,47 @@ export const postPetInfoUpdateAPI = (data) => {
   })
 }
 
+// 图片接口
+/** 
+ * 7. 获取该动物所有图片
+ */
+export const getFindPetImgs = (data) => {
+  return http({
+    method: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/pet/findPetImgs',
+    data
+  })
+}
+
+/** 
+ * 8. 添加图片
+ */
+export const postAddPetImgs = (data) => {
+  return http({
+    method: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/pet/addPetImgs',
+    data
+  })
+}
+
+/** 
+ * 9. 删除图片
+ */
+export const postDeletePetImgs = (data) => {
+  return http({
+    method: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/pet/deletePetImgs',
+    data
+  })
+}
+
+
 // 任务接口
 /** 
- * 7. 添加任务
+ * 10. 添加任务
  */
 export const postAddPetTaskAPI = (data) => {
   return http({
@@ -88,7 +126,7 @@ export const postAddPetTaskAPI = (data) => {
 }
 
 /** 
- * 8. 查询任务
+ * 11. 查询任务
  */
 export const getPetTaskAPI = (data) => {
   return http({
@@ -100,7 +138,7 @@ export const getPetTaskAPI = (data) => {
 }
 
 /** 
- * 9. 更新任务
+ * 12. 更新任务
  */
 export const postUpdatePetTaskAPI = (data) => {
   return http({
@@ -112,7 +150,7 @@ export const postUpdatePetTaskAPI = (data) => {
 }
 
 /** 
- * 10. 删除任务
+ * 13. 删除任务
  */
 export const postDeleteTaskAPI = (data) => {
   return http({
@@ -124,7 +162,7 @@ export const postDeleteTaskAPI = (data) => {
 }
 
 /** 
- * 11. 完成任务
+ * 14. 完成任务
  */
 export const postFinishTaskAPI = (data) => {
   return http({

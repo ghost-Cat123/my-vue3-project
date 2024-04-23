@@ -101,7 +101,6 @@ export default {
           let data = JSON.parse(res.data.replace('\uFEFF', ''))
           if (data.code === 1) {
             this.plantInfo.plantImg = data.data
-            console.log(this.plantInfo);
             const addRes = await postPlantAddAPI(this.plantInfo)
             if (addRes.code === 1) {
               // 成功提示

@@ -86,9 +86,46 @@ export const postPlantInfoUpdateAPI = (data) => {
   })
 }
 
+// 图片接口
+/** 
+ * 7. 获取该植物所有图片
+ */
+export const getFindPlantImgs = (data) => {
+  return http({
+    method: 'GET',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/plant/findPlantImgs',
+    data
+  })
+}
+
+/** 
+ * 8. 添加图片
+ */
+export const postAddPlantImgs = (data) => {
+  return http({
+    method: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/plant/addPlantImgs',
+    data
+  })
+}
+
+/** 
+ * 9. 删除图片
+ */
+export const postDeletePlantImgs = (data) => {
+  return http({
+    method: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    url: '/plant/deletePlantImgs',
+    data
+  })
+}
+
 // 任务接口
 /** 
- * 7. 添加任务
+ * 10. 添加任务
  */
 export const postAddPlantTaskAPI = (data) => {
   return http({
@@ -100,7 +137,7 @@ export const postAddPlantTaskAPI = (data) => {
 }
 
 /** 
- * 8. 查询任务
+ * 11. 查询任务
  */
 export const getPlantTaskAPI = (data) => {
   return http({
@@ -112,7 +149,7 @@ export const getPlantTaskAPI = (data) => {
 }
 
 /** 
- * 9. 更新任务
+ * 12. 更新任务
  */
 export const postUpdatePlantTaskAPI = (data) => {
   return http({
@@ -124,7 +161,7 @@ export const postUpdatePlantTaskAPI = (data) => {
 }
 
 /** 
- * 10. 删除任务
+ * 13. 删除任务
  */
 export const postDeleteTaskAPI = (data) => {
   return http({
@@ -136,7 +173,7 @@ export const postDeleteTaskAPI = (data) => {
 }
 
 /** 
- * 11. 完成任务
+ * 14. 完成任务
  */
 export const postFinishTaskAPI = (data) => {
   return http({
