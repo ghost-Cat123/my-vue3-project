@@ -354,6 +354,7 @@ export default {
           if (task.taskId === this.taskFormData.taskId) {
             task.taskName = this.taskFormData.taskName
             task.expireTime = this.taskFormData.expireTime
+            task.taskState = true
           }
         })
         this.taskFormData.taskName = ''
