@@ -186,7 +186,7 @@ export default {
       this.edit.postId = id
       this.$refs.popup.open('bottom');
     },
-    
+
 
     // 异步请求
     // 修改用户密码
@@ -194,10 +194,10 @@ export default {
       // 修改密码
       const res = await patchUpdatePwdAPI(this.pwd)
       // 清空用户输入
-      this.$refs.popup.close()
       this.pwd.old_pwd = ''
       this.pwd.new_pwd = ''
-      this.re_pwd = ''
+      this.pwd.re_pwd = ''
+      this.$refs.pwd.close()
       // 根据返回值做出相应操作
       if (res.code === 1) {
         // 清空Pinia中的数据
@@ -282,7 +282,9 @@ export default {
     const member = useMemberStore().profile
     this.userInfo = member
     this.id.memberId = this.userInfo.userId
-
+    // console.log(this.userInfo.userImg);
+    if (this.userInfo.userImg === '') this.userInfo.userImg = '../../static/icon/defaultAvater.png'
+    console.log(this.userInfo.userImg);
     this.getSum()
     this.getMyPost()
   },

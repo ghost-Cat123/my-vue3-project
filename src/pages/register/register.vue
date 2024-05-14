@@ -42,16 +42,29 @@ export default {
       // 前端手动校验
       if (this.input.userPassword !== this.confirmPwd) {
         uni.showToast({ icon: 'none', title: '两次输入密码不一致' })
+        this.input.userName = ''
+        this.input.userPassword = ''
+        this.confirmPwd = ''
         return;
       }
       // 后端发请求,新增用户信息
-      await postRegisterAPI(this.input)
-      // 成功提示
-      uni.showToast({ icon: 'success', title: '注册成功' })
-      setTimeout(() => {
-        // 页面跳转
-        uni.navigateTo({ url: '/pages/login/login' })
-      }, 500)
+      const res = await postRegisterAPI(this.input)
+      if (res.code === 1) {
+        // 成功提示
+        uni.showToast({ icon: 'success', title: '注册成功' })
+        setTimeout(() => {
+          // 页面跳转
+          uni.navigateTo({ url: '/pages/login/login' })
+        }, 500)
+      } else {
+        uni.showToast({
+          title: res.message,
+          icon: 'none',
+        })
+        this.input.userName = ''
+        this.input.userPassword = ''
+        this.confirmPwd = ''
+      }
     }
   }
 }
