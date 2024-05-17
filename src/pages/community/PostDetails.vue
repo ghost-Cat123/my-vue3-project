@@ -576,7 +576,7 @@ export default {
     .dislike {
       float: left;
       font-size: 30rpx;
-      color: #fff9f9;
+      color: #bfb7b7;
     }
   }
 }

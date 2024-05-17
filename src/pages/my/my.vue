@@ -61,7 +61,7 @@
   <!-- 个人发帖列表 -->
   <view class="postListBr"></view>
   <view class="postList">
-    <view class="myPost">我的评论</view>
+    <view class="myPost">我的帖子</view>
     <view class="postBox" v-for="postInfo in postList" :key="postInfo.postId">
       <image class="deleteIcon" src="@/static/icon/deletePost.png" mode="scaleToFill"
         @click="confirmDialog(postInfo.postId)"></image>
